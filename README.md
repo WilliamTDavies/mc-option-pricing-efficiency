@@ -1,0 +1,10 @@
+# Statistical Efficiency in Monte Carlo Option Pricing: Variance Reduction vs Computational Performance
+
+# [WIP]
+
+
+This project investigates how efficiently Monte Carlo methods can be used to price financial derivatives, focusing not just on correctness but on the trade-off between statistical accuracy and computational cost. Using a risk-neutral Geometric Brownian Motion framework, European options are first priced and validated against the closed-form Black–Scholes model solution, establishing a benchmark for convergence and estimator reliability. The analysis then extends to Asian options, where no simple analytical solution exists, making Monte Carlo methods essential and exposing their inherent inefficiency due to high variance.
+
+To address this, the project implements and compares variance reduction techniques—specifically antithetic variates and control variates—within a rigorous statistical framework. Convergence rates, confidence intervals, and estimator variance are analysed in detail, with a particular focus on how quickly each method achieves a target level of accuracy. Crucially, the project reframes performance in terms of statistical efficiency: the computational cost required to achieve a given error tolerance. This allows a direct comparison between brute-force simulation and more sophisticated variance reduction approaches.
+
+Finally, the project evaluates implementation-level trade-offs by comparing a fully vectorised Python implementation against a C++ version of the core Monte Carlo engine. Rather than simply demonstrating that C++ is faster, the analysis quantifies when lower-level optimisation materially improves efficiency and when high-level vectorisation is sufficient. The result is a structured study that connects stochastic modelling, statistical inference, and computational performance—mirroring the considerations faced in real-world quantitative finance.
