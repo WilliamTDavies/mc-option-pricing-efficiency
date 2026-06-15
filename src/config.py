@@ -1,0 +1,25 @@
+# src/config.py
+
+OPTION_PARAMS = {
+    "S0": 100.0,
+    "K": 100.0,
+    "r": 0.05,
+    "sigma": 0.20,
+    "T": 1.0,
+}
+
+PATH_GRID = [1000, 2000, 5000, 10000, 20000, 50000, 100000]
+
+N_REPLICATIONS = 20
+ASIAN_N_STEPS = 252
+
+REFERENCE_PATHS = 200000
+REFERENCE_SEED = 42
+
+BASE_SEED = 0
+
+EUROPEAN_SEED_OFFSET = 100000
+ASIAN_SEED_OFFSET = 200000
+
+RESULTS_DIR = "results/data"
+FIGURES_DIR = "results/figures"
