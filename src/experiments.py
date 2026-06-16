@@ -17,6 +17,7 @@ from src.config import (
     RESULTS_DIR,
 )
 from src.models import make_option_params, mc_price_asian_call, mc_price_european_call
+from src.antithetic_variates import mc_price_european_call_antithetic, mc_price_asian_call_antithetic
 
 
 def get_default_params():
@@ -108,8 +109,6 @@ def run_asian_sweep(
     n_steps=None,
     n_replications=None,
     seed=BASE_SEED,
-    reference_n_paths=None,
-    reference_seed=None,
 ):
     """
     Run repeated Monte Carlo experiments for the Asian call.
@@ -124,9 +123,7 @@ def run_asian_sweep(
 
     reference = asian_call_reference(
         params=params,
-        n_paths=reference_n_paths if reference_n_paths is not None else 200000,
         n_steps=n_steps,
-        seed=reference_seed if reference_seed is not None else 999999,
     )
 
     rows = []
@@ -184,19 +181,186 @@ def run_asian_sweep(
     return summary
 
 
+def run_european_antithetic_sweep(
+    params,
+    path_grid=None,
+    n_replications=None,
+    seed=BASE_SEED,
+):
+    """
+    Run repeated Monte Carlo experiments for the European call with antithetic variates.
+    Returns a summary DataFrame.
+    """
+    if path_grid is None:
+        path_grid = PATH_GRID
+    if n_replications is None:
+        n_replications = N_REPLICATIONS
+
+    reference = european_call_reference(params)
+
+    rows = []
+
+    for n_paths in path_grid:
+        for rep in range(n_replications):
+            rep_seed = build_seed(seed, EUROPEAN_SEED_OFFSET, n_paths, rep)
+
+            start = time.perf_counter()
+            price, std_err, ci_low, ci_high = mc_price_european_call_antithetic(
+                params=params,
+                n_pairs=n_paths // 2,
+                seed=rep_seed,
+            )
+            runtime = time.perf_counter() - start
+
+            rows.append(
+                {
+                    "option_type": "european_antithetic",
+                    "n_paths": n_paths,
+                    "replication": rep,
+                    "price": price,
+                    "reference_price": reference,
+                    "abs_error": abs(price - reference),
+                    "signed_error": price - reference,
+                    "std_error": std_err,
+                    "ci_low": ci_low,
+                    "ci_high": ci_high,
+                    "ci_width": ci_high - ci_low,
+                    "runtime_sec": runtime,
+                }
+            )
+
+    df = pd.DataFrame(rows)
+
+    summary = (
+        df.groupby(["option_type", "n_paths"], as_index=False)
+        .agg(
+            reference_price=("reference_price", "first"),
+            mean_price=("price", "mean"),
+            std_price=("price", "std"),
+            mean_abs_error=("abs_error", "mean"),
+            mean_signed_error=("signed_error", "mean"),
+            mean_std_error=("std_error", "mean"),
+            mean_ci_width=("ci_width", "mean"),
+            mean_runtime_sec=("runtime_sec", "mean"),
+            median_runtime_sec=("runtime_sec", "median"),
+        )
+        .sort_values("n_paths")
+        .reset_index(drop=True)
+    )
+
+    return summary
+
+
+def run_asian_antithetic_sweep(
+    params,
+    path_grid=None,
+    n_steps=None,
+    n_replications=None,
+    seed=BASE_SEED,
+):
+    """
+    Run repeated Monte Carlo experiments for the Asian call with antithetic variates.
+    Returns a summary DataFrame.
+    """
+    if path_grid is None:
+        path_grid = PATH_GRID
+    if n_steps is None:
+        n_steps = ASIAN_N_STEPS
+    if n_replications is None:
+        n_replications = N_REPLICATIONS
+
+    reference = asian_call_reference(
+        params=params,
+        n_steps=n_steps,
+    )
+
+    rows = []
+
+    for n_paths in path_grid:
+        for rep in range(n_replications):
+            rep_seed = build_seed(seed, ASIAN_SEED_OFFSET, n_paths, rep)
+
+            start = time.perf_counter()
+            price, std_err, ci_low, ci_high = mc_price_asian_call_antithetic(
+                params=params,
+                n_pairs=n_paths // 2,
+                n_steps=n_steps,
+                seed=rep_seed,
+            )
+            runtime = time.perf_counter() - start
+
+            rows.append(
+                {
+                    "option_type": "asian_antithetic",
+                    "n_steps": n_steps,
+                    "n_paths": n_paths,
+                    "replication": rep,
+                    "price": price,
+                    "reference_price": reference,
+                    "abs_error": abs(price - reference),
+                    "signed_error": price - reference,
+                    "std_error": std_err,
+                    "ci_low": ci_low,
+                    "ci_high": ci_high,
+                    "ci_width": ci_high - ci_low,
+                    "runtime_sec": runtime,
+                }
+            )
+
+    df = pd.DataFrame(rows)
+
+    summary = (
+        df.groupby(["option_type", "n_steps", "n_paths"], as_index=False)
+        .agg(
+            reference_price=("reference_price", "first"),
+            mean_price=("price", "mean"),
+            std_price=("price", "std"),
+            mean_abs_error=("abs_error", "mean"),
+            mean_signed_error=("signed_error", "mean"),
+            mean_std_error=("std_error", "mean"),
+            mean_ci_width=("ci_width", "mean"),
+            mean_runtime_sec=("runtime_sec", "mean"),
+            median_runtime_sec=("runtime_sec", "median"),
+        )
+        .sort_values(["n_steps", "n_paths"])
+        .reset_index(drop=True)
+    )
+
+    return summary
+
+
 def run_all_experiments():
     """
-    Run the baseline experiments and return all summary tables.
+    Run all experiments and return summary tables.
     """
     params = get_default_params()
 
-    european = run_european_sweep(params=params)
-    asian = run_asian_sweep(params=params)
-
-    return {
-        "european": european,
-        "asian": asian,
+    experiments = {
+        "european_mc": (
+            "Running European call sweep...",
+            run_european_sweep,
+        ),
+        "asian_mc": (
+            "Running Asian call sweep...",
+            run_asian_sweep,
+        ),
+        "european_antithetic": (
+            "Running European call antithetic sweep...",
+            run_european_antithetic_sweep,
+        ),
+        "asian_antithetic": (
+            "Running Asian call antithetic sweep...",
+            run_asian_antithetic_sweep,
+        ),
     }
+
+    results = {}
+
+    for name, (message, experiment) in experiments.items():
+        print(f"\n{message}")
+        results[name] = experiment(params=params)
+
+    return results
 
 
 def save_results(results, results_dir=RESULTS_DIR):
@@ -206,5 +370,8 @@ def save_results(results, results_dir=RESULTS_DIR):
     results_path = Path(results_dir)
     results_path.mkdir(parents=True, exist_ok=True)
 
-    results["european"].to_csv(results_path / "european_summary.csv", index=False)
-    results["asian"].to_csv(results_path / "asian_summary.csv", index=False)
+    for name, df in results.items():
+        df.to_csv(
+            results_path / f"{name}_summary.csv",
+            index=False,
+        )

@@ -5,13 +5,13 @@ from src.plotting import plot_all
 def main():
     print("Running experiments...")
     results = run_all_experiments()
-    print("Experiments completed.")
+    print("\nExperiments completed.")
 
     save_results(results)
-    print("Saved CSVs to results/data/processed/")
+    print("\nSaved CSVs to results/data/")
 
     plot_all(results)
-    print("Saved figures to results/figures/")
+    print("\nSaved figures to results/figures/")
 
 
 if __name__ == "__main__":

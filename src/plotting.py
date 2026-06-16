@@ -7,67 +7,109 @@ def ensure_dir(path):
     parent.mkdir(parents=True, exist_ok=True)
 
 
-def plot_error_vs_paths(df, title, outpath):
+def _plot_multiple_series(
+    data,
+    x_key,
+    y_key,
+    title,
+    xlabel,
+    ylabel,
+    outpath,
+    xscale="log",
+    yscale="log",
+):
     """
-    Plot mean absolute error against number of paths.
+    Generic helper for plotting multiple summary series on the same axes.
     """
     ensure_dir(outpath)
 
     plt.figure(figsize=(8, 5))
-    plt.plot(df["n_paths"], df["mean_abs_error"], marker="o")
-    plt.xscale("log")
-    plt.yscale("log")
-    plt.xlabel("Number of paths")
-    plt.ylabel("Mean absolute error")
+
+    for label, df in data.items():
+        plt.plot(df[x_key], df[y_key], marker="o", label=label)
+
+    if xscale:
+        plt.xscale(xscale)
+    if yscale:
+        plt.yscale(yscale)
+
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     plt.title(title)
+    plt.legend()
     plt.tight_layout()
     plt.savefig(outpath, dpi=200)
     plt.close()
 
 
-def plot_runtime_vs_error(df, title, outpath):
+def plot_error_comparison(data, title, outpath):
     """
-    Plot runtime against mean absolute error.
+    Compare mean absolute error against number of paths for multiple methods.
     """
-    ensure_dir(outpath)
+    _plot_multiple_series(
+        data=data,
+        x_key="n_paths",
+        y_key="mean_abs_error",
+        title=title,
+        xlabel="Number of paths",
+        ylabel="Mean absolute error",
+        outpath=outpath,
+        xscale="log",
+        yscale="log",
+    )
 
-    plt.figure(figsize=(8, 5))
-    plt.plot(df["mean_abs_error"], df["mean_runtime_sec"], marker="o")
-    plt.xscale("log")
-    plt.yscale("log")
-    plt.xlabel("Mean absolute error")
-    plt.ylabel("Mean runtime (sec)")
-    plt.title(title)
-    plt.tight_layout()
-    plt.savefig(outpath, dpi=200)
-    plt.close()
+
+def plot_runtime_error_comparison(data, title, outpath):
+    """
+    Compare runtime against mean absolute error for multiple methods.
+    """
+    _plot_multiple_series(
+        data=data,
+        x_key="mean_abs_error",
+        y_key="mean_runtime_sec",
+        title=title,
+        xlabel="Mean absolute error",
+        ylabel="Mean runtime (sec)",
+        outpath=outpath,
+        xscale="log",
+        yscale="log",
+    )
 
 
 def plot_all(results, figures_dir="results/figures"):
     """
-    Create all standard plots for the project.
+    Create the main comparison plots for the project.
     """
-    european = results["european"]
-    asian = results["asian"]
+    european = {
+        "Standard MC": results["european_mc"],
+        "Antithetic MC": results["european_antithetic"],
+    }
 
-    plot_error_vs_paths(
+    asian = {
+        "Standard MC": results["asian_mc"],
+        "Antithetic MC": results["asian_antithetic"],
+    }
+
+    plot_error_comparison(
         european,
-        "European call: error vs number of paths",
-        f"{figures_dir}/european_error_vs_paths.png",
+        "European call: standard vs antithetic",
+        f"{figures_dir}/european_error_comparison.png",
     )
-    plot_runtime_vs_error(
+
+    plot_runtime_error_comparison(
         european,
         "European call: runtime vs error",
-        f"{figures_dir}/european_runtime_vs_error.png",
+        f"{figures_dir}/european_runtime_error_comparison.png",
     )
 
-    plot_error_vs_paths(
+    plot_error_comparison(
         asian,
-        "Asian call: error vs number of paths",
-        f"{figures_dir}/asian_error_vs_paths.png",
+        "Asian call: standard vs antithetic",
+        f"{figures_dir}/asian_error_comparison.png",
     )
-    plot_runtime_vs_error(
+
+    plot_runtime_error_comparison(
         asian,
         "Asian call: runtime vs error",
-        f"{figures_dir}/asian_runtime_vs_error.png",
+        f"{figures_dir}/asian_runtime_error_comparison.png",
     )
