@@ -76,10 +76,7 @@ def simulate_gbm_terminal(params, n_paths, seed=None):
     sigma = params["sigma"]
     T = params["T"]
 
-    drift = (r - 0.5 * sigma**2) * T
-    diffusion = sigma * np.sqrt(T) * z
-
-    return S0 * np.exp(drift + diffusion)
+    return S0 * np.exp((r - 0.5 * sigma**2) * T + sigma * np.sqrt(T) * z)
 
 
 def simulate_gbm_paths(params, n_paths, n_steps, seed=None):
@@ -95,11 +92,9 @@ def simulate_gbm_paths(params, n_paths, n_steps, seed=None):
     T = params["T"]
 
     dt = T / n_steps
-    drift = (r - 0.5 * sigma**2) * dt
-    vol = sigma * np.sqrt(dt)
 
     z = rng.standard_normal((n_paths, n_steps))
-    increments = drift + vol * z
+    increments = (r - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * z
 
     log_paths = np.cumsum(increments, axis=1)
     log_paths = np.hstack([np.zeros((n_paths, 1)), log_paths])
@@ -133,19 +128,11 @@ def mc_price_european_call(params, n_paths, seed=None):
         seed=seed,
     )
 
-    payoffs = european_call_payoff(
-        ST,
-        params["K"],
-    )
+    payoffs = european_call_payoff(ST, params["K"])
 
-    discounted_payoffs = (
-        np.exp(-params["r"] * params["T"])
-        * payoffs
-    )
+    discounted_payoffs = (np.exp(-params["r"] * params["T"]) * payoffs)
 
-    return compute_estimator_statistics(
-        discounted_payoffs
-    )
+    return compute_estimator_statistics(discounted_payoffs)
 
 
 def mc_price_asian_call(params, n_paths, n_steps, seed=None):
@@ -159,16 +146,8 @@ def mc_price_asian_call(params, n_paths, n_steps, seed=None):
         seed=seed,
     )
 
-    payoffs = asian_arithmetic_call_payoff(
-        paths,
-        params["K"],
-    )
+    payoffs = asian_arithmetic_call_payoff(paths, params["K"])
 
-    discounted_payoffs = (
-        np.exp(-params["r"] * params["T"])
-        * payoffs
-    )
+    discounted_payoffs = (np.exp(-params["r"] * params["T"]) * payoffs)
 
-    return compute_estimator_statistics(
-        discounted_payoffs
-    )
+    return compute_estimator_statistics(discounted_payoffs)
