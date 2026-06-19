@@ -36,7 +36,10 @@ def _plot_multiple_series(
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.title(title)
-    plt.legend()
+
+    plt.legend(frameon=False)
+    plt.grid(True, which="both", alpha=0.3)
+
     plt.tight_layout()
     plt.savefig(outpath, dpi=200)
     plt.close()
@@ -80,36 +83,40 @@ def plot_all(results, figures_dir="results/figures"):
     """
     Create the main comparison plots for the project.
     """
+
     european = {
         "Standard MC": results["european_mc"],
-        "Antithetic MC": results["european_antithetic"],
+        "Antithetic": results["european_antithetic"],
+        "Control Variate": results["european_control_variate"],
     }
 
     asian = {
         "Standard MC": results["asian_mc"],
-        "Antithetic MC": results["asian_antithetic"],
+        "Antithetic": results["asian_antithetic"],
+        "Control Variate": results["asian_control_variate"],
     }
 
     plot_error_comparison(
         european,
-        "European call: standard vs antithetic",
+        "European Call: Error vs Number of Paths",
         f"{figures_dir}/european_error_comparison.png",
     )
 
     plot_runtime_error_comparison(
         european,
-        "European call: runtime vs error",
+        "European Call: Runtime vs Error",
         f"{figures_dir}/european_runtime_error_comparison.png",
     )
 
     plot_error_comparison(
         asian,
-        "Asian call: standard vs antithetic",
+        "Asian Call: Error vs Number of Paths",
         f"{figures_dir}/asian_error_comparison.png",
     )
 
     plot_runtime_error_comparison(
         asian,
-        "Asian call: runtime vs error",
+        "Asian Call: Runtime vs Error",
         f"{figures_dir}/asian_runtime_error_comparison.png",
     )
+
