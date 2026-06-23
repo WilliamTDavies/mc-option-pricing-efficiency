@@ -88,12 +88,14 @@ def plot_all(results, figures_dir="results/figures"):
         "Standard MC": results["european_mc"],
         "Antithetic": results["european_antithetic"],
         "Control Variate": results["european_control_variate"],
+        "Sobol Quasi-MC": results["european_quasi_monte_carlo"],
     }
 
     asian = {
         "Standard MC": results["asian_mc"],
         "Antithetic": results["asian_antithetic"],
         "Control Variate": results["asian_control_variate"],
+        "Sobol Quasi-MC": results["asian_quasi_monte_carlo"],
     }
 
     plot_error_comparison(
