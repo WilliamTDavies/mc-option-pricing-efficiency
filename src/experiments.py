@@ -1,9 +1,10 @@
 # src/experiments.py
 
 import time
-from pathlib import Path
-
 import pandas as pd
+import subprocess
+
+from pathlib import Path
 
 from src.benchmarks import asian_call_reference, european_call_reference
 from src.config import (
@@ -689,6 +690,34 @@ def run_asian_quasi_monte_carlo_sweep(
     return summary
 
 
+def run_cpp_benchmarks():
+    """
+    Compile and execute the C++ benchmark program.
+    """
+    cpp_dir = Path("cpp")
+
+    cpp_file = cpp_dir / "option_pricer.cpp"
+
+    exe = cpp_dir / "option_pricer.exe"
+
+    subprocess.run(
+        [
+            "g++",
+            "-O3",
+            "-std=c++17",
+            str(cpp_file),
+            "-o",
+            str(exe),
+        ],
+        check=True,
+    )
+
+    subprocess.run(
+        [str(exe)],
+        check=True,
+    )
+
+
 def run_all_experiments():
     """
     Run all experiments and return summary tables.
@@ -736,6 +765,17 @@ def run_all_experiments():
         print(f"\n{message}")
         results[name] = experiment(params=params)
 
+    print("\nRunning C++ benchmarks...")
+    run_cpp_benchmarks()
+
+    results["cpp_european_mc"] = pd.read_csv(
+        "results/data/cpp_european_mc_summary.csv"
+    )
+
+    results["cpp_asian_mc"] = pd.read_csv(
+        "results/data/cpp_asian_mc_summary.csv"
+    )
+
     return results
 
 
@@ -747,6 +787,9 @@ def save_results(results, results_dir=RESULTS_DIR):
     results_path.mkdir(parents=True, exist_ok=True)
 
     for name, df in results.items():
+        if name.startswith("cpp_"):
+            continue
+
         df.to_csv(
             results_path / f"{name}_summary.csv",
             index=False,

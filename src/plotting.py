@@ -1,3 +1,5 @@
+# src/plotting.py
+
 import matplotlib.pyplot as plt
 from pathlib import Path
 
@@ -89,6 +91,7 @@ def plot_all(results, figures_dir="results/figures"):
         "Antithetic": results["european_antithetic"],
         "Control Variate": results["european_control_variate"],
         "Sobol Quasi-MC": results["european_quasi_monte_carlo"],
+        "C++ MC": results["cpp_european_mc"]
     }
 
     asian = {
@@ -96,6 +99,7 @@ def plot_all(results, figures_dir="results/figures"):
         "Antithetic": results["asian_antithetic"],
         "Control Variate": results["asian_control_variate"],
         "Sobol Quasi-MC": results["asian_quasi_monte_carlo"],
+        "C++ MC": results["cpp_asian_mc"]
     }
 
     plot_error_comparison(
