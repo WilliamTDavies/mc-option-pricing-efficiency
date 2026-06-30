@@ -48,7 +48,10 @@ def qmc_price_european_call(
         n_paths: number of quasi-random paths to simulate
         seed: random seed for reproducibility
     Returns:
-        price: estimated price of the European call option
+        price
+        std_error
+        ci_low
+        ci_high
     """
     S0 = params["S0"]
     K = params["K"]
@@ -82,7 +85,10 @@ def qmc_price_asian_call(
         n_steps: number of time steps for the path simulation
         seed: random seed for reproducibility
     Returns:
-        price: estimated price of the Asian call option
+        price
+        std_error
+        ci_low
+        ci_high
     """
     S0 = params["S0"]
     K = params["K"]
