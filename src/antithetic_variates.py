@@ -86,10 +86,3 @@ def mc_price_asian_call_antithetic(params, n_pairs, n_steps, seed=None):
     discounted_payoffs = (np.exp(-r * T) * payoffs)
 
     return compute_estimator_statistics(discounted_payoffs)
-
-
-
-
-
-
-
