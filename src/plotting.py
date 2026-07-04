@@ -91,6 +91,7 @@ def plot_all(results, figures_dir="results/figures"):
         "Antithetic": results["european_antithetic"],
         "Control Variate": results["european_control_variate"],
         "Sobol Quasi-MC": results["european_quasi_monte_carlo"],
+        "Multilevel MC" : results["european_multilevel_monte_carlo"],
         "C++ MC": results["cpp_european_mc"]
     }
 
@@ -99,6 +100,7 @@ def plot_all(results, figures_dir="results/figures"):
         "Antithetic": results["asian_antithetic"],
         "Control Variate": results["asian_control_variate"],
         "Sobol Quasi-MC": results["asian_quasi_monte_carlo"],
+        "Multilevel MC" : results["asian_multilevel_monte_carlo"],
         "C++ MC": results["cpp_asian_mc"]
     }
 
@@ -125,4 +127,3 @@ def plot_all(results, figures_dir="results/figures"):
         "Asian Call: Runtime vs Error",
         f"{figures_dir}/asian_runtime_error_comparison.png",
     )
-
