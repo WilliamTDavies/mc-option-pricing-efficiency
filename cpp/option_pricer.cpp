@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <filesystem>
 #include <fstream>
 #include <numeric>
 #include <random>
@@ -17,8 +18,7 @@
 constexpr double EUROPEAN_REFERENCE = 10.450583572185565; // Black-Scholes price for European option
 
 // S0=100, K=100, r=0.05, sigma=0.2, T=1, n_steps=252
-constexpr double ASIAN_REFERENCE = 5.781813651077403; // Reference price for Asian option
-
+constexpr double ASIAN_REFERENCE = 5.766647396387583; // Reference price for Asian option
 
 // Offsets for European and Asian options
 constexpr int EUROPEAN_OFFSET = 100000;
@@ -31,7 +31,7 @@ constexpr double R = 0.05;
 constexpr double SIGMA = 0.20;
 constexpr double T = 1.0;
 constexpr int N_STEPS = 252;
-constexpr int N_REPLICATIONS = 20;
+constexpr int N_REPLICATIONS = 100;
 constexpr unsigned int SEED = 0;
 
 // Path Grid
@@ -486,6 +486,10 @@ void run_european_benchmark(
     unsigned int seed
 )
 {
+    std::filesystem::create_directories(
+        std::filesystem::path(output_file).parent_path()
+    );
+
     std::ofstream out(output_file);
 
     if (!out){
