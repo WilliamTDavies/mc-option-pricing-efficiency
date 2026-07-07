@@ -14,22 +14,13 @@ def ensure_dir(path):
 
 def _prepare_summary(df):
     """
-    Add derived metrics used by the plots without changing the experiment code.
-
-    Required columns:
-        mean_price, reference_price, std_price, mean_runtime_sec
+    Add derived metrics used by the plots.
     """
     tmp = df.copy()
 
     if "rmse" not in tmp.columns:
         bias = tmp["mean_price"] - tmp["reference_price"]
         tmp["rmse"] = np.sqrt(bias**2 + tmp["std_price"]**2)
-
-    if "efficiency" not in tmp.columns:
-        tmp["efficiency"] = tmp["mean_runtime_sec"] * tmp["rmse"]**2
-
-    if "runtime_error" not in tmp.columns:
-        tmp["runtime_error"] = tmp["mean_runtime_sec"]
 
     return tmp
 
@@ -171,81 +162,6 @@ def plot_runtime_paths(data, title, outpath):
     )
 
 
-def plot_confidence_intervals(data, title, outpath):
-    """
-    Compare mean 95% CI width against number of paths.
-    """
-    _plot_multiple_series(
-        data=data,
-        x_key="n_paths",
-        y_key="mean_ci_width",
-        title=title,
-        xlabel="Number of Paths",
-        ylabel="Mean 95% CI Width",
-        outpath=outpath,
-        xscale="log",
-        yscale="log",
-    )
-
-
-def plot_standard_error(data, title, outpath):
-    """
-    Compare standard error against number of paths.
-    """
-    _plot_multiple_series(
-        data=data,
-        x_key="n_paths",
-        y_key="mean_std_error",
-        title=title,
-        xlabel="Number of Paths",
-        ylabel="Standard Error",
-        outpath=outpath,
-        xscale="log",
-        yscale="log",
-    )
-
-
-def plot_efficiency(data, title, outpath):
-    """
-    Plot computational efficiency measured as runtime * RMSE^2.
-    Lower is better.
-    """
-    efficiency = {}
-    for label, df in data.items():
-        tmp = _prepare_summary(df)
-        efficiency[label] = tmp
-
-    _plot_multiple_series(
-        data=efficiency,
-        x_key="n_paths",
-        y_key="efficiency",
-        title=title,
-        xlabel="Number of Paths",
-        ylabel=r"Runtime $\times$ RMSE$^2$",
-        outpath=outpath,
-        xscale="log",
-        yscale="log",
-    )
-
-
-def plot_convergence_rate(data, title, outpath):
-    """
-    Plot RMSE against number of paths and annotate fitted log-log slopes.
-    """
-    _plot_multiple_series(
-        data=data,
-        x_key="n_paths",
-        y_key="rmse",
-        title=title,
-        xlabel="Number of Paths",
-        ylabel="RMSE",
-        outpath=outpath,
-        xscale="log",
-        yscale="log",
-        annotate_slope=True,
-    )
-
-
 def plot_all(results, figures_dir="results/figures"):
     """
     Create all figures for the project.
@@ -253,7 +169,7 @@ def plot_all(results, figures_dir="results/figures"):
 
     european = {
         "Standard MC": results["european_mc"],
-        "Antithetic": results["european_antithetic"],
+        "Antithetic Variate": results["european_antithetic"],
         "Control Variate": results["european_control_variate"],
         "Sobol Quasi-MC": results["european_quasi_monte_carlo"],
         "Multilevel MC": results["european_multilevel_monte_carlo"],
@@ -262,7 +178,7 @@ def plot_all(results, figures_dir="results/figures"):
 
     asian = {
         "Standard MC": results["asian_mc"],
-        "Antithetic": results["asian_antithetic"],
+        "Antithetic Variate": results["asian_antithetic"],
         "Control Variate": results["asian_control_variate"],
         "Sobol Quasi-MC": results["asian_quasi_monte_carlo"],
         "Multilevel MC": results["asian_multilevel_monte_carlo"],
@@ -274,12 +190,6 @@ def plot_all(results, figures_dir="results/figures"):
         european,
         "European Call: RMSE vs Number of Paths",
         f"{figures_dir}/european_error_comparison.png",
-    )
-
-    plot_convergence_rate(
-        european,
-        "European Call: Convergence Rate",
-        f"{figures_dir}/european_convergence_rate.png",
     )
 
     plot_runtime_error_comparison(
@@ -294,35 +204,11 @@ def plot_all(results, figures_dir="results/figures"):
         f"{figures_dir}/european_runtime_paths.png",
     )
 
-    plot_confidence_intervals(
-        european,
-        "European Call: Confidence Interval Width",
-        f"{figures_dir}/european_ci_width.png",
-    )
-
-    plot_standard_error(
-        european,
-        "European Call: Standard Error",
-        f"{figures_dir}/european_standard_error.png",
-    )
-
-    plot_efficiency(
-        european,
-        "European Call: Computational Efficiency",
-        f"{figures_dir}/european_efficiency.png",
-    )
-
     # Asian
     plot_error_comparison(
         asian,
         "Asian Call: RMSE vs Number of Paths",
         f"{figures_dir}/asian_error_comparison.png",
-    )
-
-    plot_convergence_rate(
-        asian,
-        "Asian Call: Convergence Rate",
-        f"{figures_dir}/asian_convergence_rate.png",
     )
 
     plot_runtime_error_comparison(
@@ -335,22 +221,4 @@ def plot_all(results, figures_dir="results/figures"):
         asian,
         "Asian Call: Runtime vs Number of Paths",
         f"{figures_dir}/asian_runtime_paths.png",
-    )
-
-    plot_confidence_intervals(
-        asian,
-        "Asian Call: Confidence Interval Width",
-        f"{figures_dir}/asian_ci_width.png",
-    )
-
-    plot_standard_error(
-        asian,
-        "Asian Call: Standard Error",
-        f"{figures_dir}/asian_standard_error.png",
-    )
-
-    plot_efficiency(
-        asian,
-        "Asian Call: Computational Efficiency",
-        f"{figures_dir}/asian_efficiency.png",
     )

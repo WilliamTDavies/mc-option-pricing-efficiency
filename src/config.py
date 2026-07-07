@@ -26,7 +26,7 @@ FIGURES_DIR = "results/figures"
 
 METHOD_STYLES = {
     "Standard MC": dict(color="#1f77b4", marker="o", linestyle="-"),
-    "Antithetic": dict(color="#ff7f0e", marker="s", linestyle="-"),
+    "Antithetic Variate": dict(color="#ff7f0e", marker="s", linestyle="-"),
     "Control Variate": dict(color="#2ca02c", marker="^", linestyle="-"),
     "Sobol Quasi-MC": dict(color="#d62728", marker="D", linestyle="-"),
     "Multilevel MC": dict(color="#7b3294", marker="v", linestyle="-"),
