@@ -29,6 +29,8 @@ dist/
 *.out
 *.toc
 *.synctex.gz
+*.fdb_latexmk
+*.fls
 
 # Data
 results/data/*
