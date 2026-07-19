@@ -65,7 +65,7 @@ A lower-level implementation used to compare performance against the Python vers
 The underlying asset is modelled by geometric Brownian motion under the risk-neutral measure:
 
 $$
-dS_t = rS_t\,dt + \sigma S_t\,dW_t
+dS_t = rS_t\ dt + \sigma S_t\ dW_t
 $$
 
 European call prices are benchmarked against the analytical Black–Scholes formula. Asian call prices are benchmarked against a high-precision Monte Carlo reference estimate.
